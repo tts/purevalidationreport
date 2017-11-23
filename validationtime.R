@@ -25,10 +25,16 @@ validated_grouped_type <- validated %>%
   summarise(MedValidDays = round(median(DiffDays), 2)) %>% 
   filter(!is.na(Type))
 
-# Shorten type names for plotting
+# and unit
+validated_grouped_unit <- validated %>% 
+  group_by(Unit) %>% 
+  summarise(MedValidDays = round(median(DiffDays), 2)) 
+
+# Shorten type and unit names for plotting
 validated_grouped_type$Type <- gsub("^.*\\s-\\s([A-Z].*)", "\\1)", validated_grouped_type$Type)
 validated_grouped_type$Type <- gsub("\\)", "", validated_grouped_type$Type)
 validated_grouped_type$Type <- substr(validated_grouped_type$Type, 1, 30)
+validated_grouped_unit$Unit <- substr(validated_grouped_unit$Unit, 1, 30)
 
 doplot <- function(d, col, cc, title) {
 
@@ -40,7 +46,7 @@ doplot <- function(d, col, cc, title) {
                          fill = col)) +
     geom_bar(position="dodge", stat="identity") +
     scale_fill_manual(values = getPalette(cc)) +
-    scale_y_continuous(expand = c(0,0)) +
+    scale_y_continuous(expand = c(0,0), breaks = seq(from=0, to=)) +
     ggtitle(title) +
     labs(y = "Days", x = as.character(col)) +
     theme_minimal() +
@@ -58,4 +64,8 @@ doplot(d = validated_grouped_source, col = "Source",
 colourCount <- length(unique(validated_grouped_type$Type))
 doplot(d = validated_grouped_type, col = "Type", 
        cc = colourCount, title = "Median validation time in 2017 by type")
+
+colourCount <- length(unique(validated_grouped_unit$Unit))
+doplot(d = validated_grouped_unit, col = "Unit", 
+       cc = colourCount, title = "Median validation time in 2017 by unit")
 
